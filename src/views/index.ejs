@@ -1,0 +1,168 @@
+<%- include('partials/header') %>
+
+<!-- Hero Section -->
+<section class="relative py-12 md:py-20 mb-12">
+  <div class="max-w-3xl mx-auto text-center space-y-6">
+    
+    <!-- Hero Text Content -->
+    <div class="space-y-6">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-bold tracking-wide">
+        <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        <%= i18n.hero.capacityAlert %>
+      </div>
+
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+        <%= i18n.hero.title %>
+      </h1>
+
+      <p class="text-base sm:text-lg text-slate-300 font-normal leading-relaxed">
+        <%= i18n.hero.subtitle %>
+      </p>
+
+      <div class="flex flex-wrap items-center justify-center gap-4 pt-2">
+        <a href="#events-list" class="bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 font-extrabold text-sm px-6 py-3.5 rounded-xl shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5 active:scale-95 flex items-center gap-2">
+          <span><%= i18n.hero.exploreBtn %></span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+        </a>
+
+        <a href="/admin/sheets" class="glass-panel hover:bg-slate-800/60 text-slate-200 font-bold text-sm px-5 py-3.5 rounded-xl border border-slate-700/60 flex items-center gap-2 transition-all">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Google Sheets Hub</span>
+        </a>
+      </div>
+
+      <!-- Feature Badges -->
+      <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800/80 max-w-xl mx-auto">
+        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+          <div class="text-xl font-extrabold text-cyan-400">100%</div>
+          <div class="text-[11px] text-slate-400 font-medium">Sheets Sync</div>
+        </div>
+        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+          <div class="text-xl font-extrabold text-emerald-400">Auto</div>
+          <div class="text-[11px] text-slate-400 font-medium">Waitlist Logic</div>
+        </div>
+        <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+          <div class="text-xl font-extrabold text-purple-400">3D QR</div>
+          <div class="text-[11px] text-slate-400 font-medium">PDF Passes</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- Events Directory Section -->
+<section id="events-list" class="space-y-8">
+  
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-800 pb-6">
+    <div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+        <%= i18n.events.title %>
+      </h2>
+      <p class="text-sm text-slate-400 mt-1">
+        <%= i18n.events.subtitle %>
+      </p>
+    </div>
+    
+    <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 bg-slate-900/80 px-3 py-2 rounded-xl border border-slate-800">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span><%= i18n.events.sheetSync %></span>
+    </div>
+  </div>
+
+  <!-- Event Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <% events.forEach(event => { %>
+      <% 
+        const spotsLeft = Math.max(0, event.capacity - event.currentRegistrations);
+        const isWaitlist = spotsLeft === 0;
+        const fillPercentage = Math.min(100, Math.round((event.currentRegistrations / event.capacity) * 100));
+        const eventTitle = lang === 'bn' ? event.titleBn : event.titleEn;
+        const eventDesc = lang === 'bn' ? event.descriptionBn : event.descriptionEn;
+        const eventLoc = lang === 'bn' ? event.locationBn : event.locationEn;
+      %>
+
+      <div class="glass-panel flex flex-col justify-between rounded-2xl overflow-hidden hover:border-cyan-500/40 group">
+        
+        <!-- Image Banner -->
+        <div class="relative h-48 overflow-hidden bg-slate-900">
+          <img src="<%= event.imageBg %>" alt="<%= eventTitle %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80" />
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+          
+          <div class="absolute top-3 left-3">
+            <span class="bg-slate-950/80 backdrop-blur-md text-cyan-300 text-[11px] font-bold px-2.5 py-1 rounded-md border border-cyan-500/30">
+              <%= event.category %>
+            </span>
+          </div>
+
+          <div class="absolute top-3 right-3">
+            <% if (isWaitlist) { %>
+              <span class="bg-rose-950/90 text-rose-300 text-[11px] font-bold px-2.5 py-1 rounded-md border border-rose-500/40 shadow-lg">
+                <%= i18n.events.full %>
+              </span>
+            <% } else { %>
+              <span class="bg-emerald-950/90 text-emerald-300 text-[11px] font-bold px-2.5 py-1 rounded-md border border-emerald-500/40 shadow-lg">
+                <%= spotsLeft %> <%= i18n.events.spotsLeft %>
+              </span>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Event Body -->
+        <div class="p-6 flex-grow flex flex-col justify-between space-y-4">
+          
+          <div>
+            <h3 class="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors line-clamp-2">
+              <%= eventTitle %>
+            </h3>
+            <p class="text-xs text-slate-300 mt-2 line-clamp-3 leading-relaxed">
+              <%= eventDesc %>
+            </p>
+          </div>
+
+          <!-- Capacity Meter Progress Bar -->
+          <div class="space-y-1.5 pt-2">
+            <div class="flex justify-between text-[11px] font-semibold">
+              <span class="text-slate-400">Capacity Status</span>
+              <span class="<%= isWaitlist ? 'text-rose-400' : 'text-cyan-300' %> font-mono">
+                <%= event.currentRegistrations %> / <%= event.capacity %> Registered
+              </span>
+            </div>
+            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-slate-800">
+              <div class="h-full rounded-full transition-all duration-500 <%= isWaitlist ? 'bg-rose-500' : 'bg-gradient-to-r from-cyan-400 to-emerald-400' %>" 
+                   style="width: <%= fillPercentage %>%"></div>
+            </div>
+          </div>
+
+          <!-- Event Metadata -->
+          <div class="text-xs text-slate-400 space-y-1.5 pt-2 border-t border-slate-800/80">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              <span><%= event.date %></span>
+            </div>
+            <div class="flex items-center gap-2 truncate">
+              <svg class="w-4 h-4 text-cyan-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+              <span class="truncate"><%= eventLoc %></span>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="pt-2 flex items-center gap-3">
+            <a href="/events/<%= event.slug %>" class="flex-1 text-center bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold text-xs py-2.5 rounded-xl border border-slate-700/80 transition-all">
+              <%= i18n.events.viewDetails %>
+            </a>
+
+            <a href="/events/<%= event.slug %>/register" class="flex-1 text-center font-extrabold text-xs py-2.5 rounded-xl transition-all shadow-md <%= isWaitlist ? 'bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white shadow-rose-900/30' : 'bg-gradient-to-r from-cyan-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 shadow-cyan-500/20' %>">
+              <%= isWaitlist ? i18n.events.waitlist : i18n.events.getTicket %>
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    <% }) %>
+  </div>
+
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,12 @@
+<%- include('partials/header') %>
+
+<div class="max-w-md mx-auto text-center py-16 space-y-4">
+  <div class="text-6xl font-black text-cyan-400">404</div>
+  <h2 class="text-xl font-bold text-white"><%= typeof message !== 'undefined' ? message : 'Page Not Found' %></h2>
+  <p class="text-xs text-slate-400">The requested page or ticket pass could not be located on Survivor's Path.</p>
+  <a href="/" class="inline-block bg-cyan-400 text-slate-950 font-bold text-xs px-6 py-3 rounded-xl mt-4">
+    Return to Home
+  </a>
+</div>
+
+<%- include('partials/footer') %>

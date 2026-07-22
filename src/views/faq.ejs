@@ -1,0 +1,147 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto space-y-8 py-4">
+
+  <!-- Header Section with 3D Glass Accent -->
+  <div class="text-center space-y-4">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-wide uppercase shadow-lg shadow-cyan-500/10">
+      <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>Help & Knowledge Base</span>
+    </div>
+    
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-cyan-300">
+      <%= i18n.faq.title %>
+    </h1>
+    
+    <p class="text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+      <%= i18n.faq.subtitle %>
+    </p>
+  </div>
+
+  <!-- Search Filter Bar inside 3D Glass Box -->
+  <div class="glass-panel p-2 flex items-center gap-3 rounded-2xl shadow-xl shadow-cyan-500/5">
+    <div class="pl-3 text-cyan-400">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </div>
+    <input 
+      type="text" 
+      id="faqSearch" 
+      placeholder="Search question or keyword..." 
+      class="w-full bg-transparent border-none text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-0 text-sm py-2"
+    />
+  </div>
+
+  <!-- 3D Glassmorphism Accordion Container -->
+  <div class="space-y-4" id="faqAccordion">
+    
+    <% const faqItems = [
+      { id: '1', q: i18n.faq.q1, a: i18n.faq.a1, cat: 'Passes & Digital Tickets' },
+      { id: '2', q: i18n.faq.q2, a: i18n.faq.a2, cat: 'Capacity & Waitlist' },
+      { id: '3', q: i18n.faq.q3, a: i18n.faq.a3, cat: 'Google Sheets Integration' },
+      { id: '4', q: i18n.faq.q4, a: i18n.faq.a4, cat: 'Authentication & Profile' },
+      { id: '5', q: i18n.faq.q5, a: i18n.faq.a5, cat: 'Gate Scanning & QR Verification' },
+      { id: '6', q: i18n.faq.q6, a: i18n.faq.a6, cat: 'Support & Cancellation' }
+    ]; %>
+
+    <% faqItems.forEach((item, index) => { %>
+      <div class="faq-item glass-panel overflow-hidden transition-all duration-300 rounded-2xl border border-white/10 hover:border-cyan-500/40 shadow-lg hover:shadow-cyan-500/20 group">
+        
+        <!-- Accordion Header Button -->
+        <button 
+          type="button"
+          class="w-full text-left px-6 py-5 flex items-center justify-between gap-4 focus:outline-none cursor-pointer select-none"
+          onclick="toggleFaq('faq-content-<%= item.id %>', 'faq-icon-<%= item.id %>')"
+          aria-expanded="false"
+        >
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center font-bold text-xs text-cyan-400 shrink-0 group-hover:bg-cyan-500/20 transition-colors">
+              0<%= index + 1 %>
+            </span>
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-wider text-cyan-400/80 block mb-0.5">
+                <%= item.cat %>
+              </span>
+              <h3 class="text-base sm:text-lg font-bold text-slate-100 group-hover:text-cyan-300 transition-colors">
+                <%= item.q %>
+              </h3>
+            </div>
+          </div>
+
+          <!-- 3D Glowing Chevron Toggle Icon -->
+          <div id="faq-icon-<%= item.id %>" class="w-8 h-8 rounded-full bg-slate-900/80 border border-slate-700/60 flex items-center justify-center text-cyan-400 transition-transform duration-300 shrink-0">
+            <svg class="w-4 h-4 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+        </button>
+
+        <!-- Accordion Expandable Answer Body -->
+        <div 
+          id="faq-content-<%= item.id %>" 
+          class="hidden px-6 pb-6 pt-2 text-slate-300 text-sm leading-relaxed border-t border-slate-800/80 bg-slate-950/30"
+        >
+          <div class="p-4 rounded-xl bg-cyan-950/20 border border-cyan-500/20 shadow-inner">
+            <p><%= item.a %></p>
+          </div>
+        </div>
+
+      </div>
+    <% }); %>
+
+  </div>
+
+  <!-- Still Have Questions Banner -->
+  <div class="glass-panel p-6 sm:p-8 rounded-3xl text-center space-y-4 bg-gradient-to-r from-slate-900/90 via-indigo-950/40 to-slate-900/90 border border-cyan-500/30 shadow-2xl">
+    <h2 class="text-xl sm:text-2xl font-bold text-white">Still have questions or need personalized support?</h2>
+    <p class="text-slate-400 text-sm max-w-lg mx-auto">
+      Submit a ticket to our support system and our team will get back to you. Every ticket is logged into our Google Sheets platform instantly.
+    </p>
+    <div class="pt-2">
+      <a href="/support" class="inline-flex items-center gap-2 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-bold text-sm px-6 py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/25 active:scale-95">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+        <span><%= i18n.nav.support %> Contact Form</span>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Interactive Accordion & Search JavaScript -->
+<script>
+  function toggleFaq(contentId, iconId) {
+    const content = document.getElementById(contentId);
+    const icon = document.getElementById(iconId);
+    
+    // Toggle hidden state
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      icon.classList.add('rotate-180', 'bg-cyan-500', 'text-slate-950');
+      icon.classList.remove('bg-slate-900/80', 'text-cyan-400');
+    } else {
+      content.classList.add('hidden');
+      icon.classList.remove('rotate-180', 'bg-cyan-500', 'text-slate-950');
+      icon.classList.add('bg-slate-900/80', 'text-cyan-400');
+    }
+  }
+
+  // Interactive search filter
+  document.getElementById('faqSearch')?.addEventListener('input', function(e) {
+    const term = e.target.value.toLowerCase().trim();
+    const items = document.querySelectorAll('.faq-item');
+
+    items.forEach(item => {
+      const text = item.innerText.toLowerCase();
+      if (text.includes(term)) {
+        item.style.display = 'block';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

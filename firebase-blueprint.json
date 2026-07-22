@@ -1,0 +1,48 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Account",
+      "description": "Registered user profile with auth details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "address": { "type": "string", "maxLength": 200 },
+        "organization": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["attendee", "organizer"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "email"]
+    },
+    "Registration": {
+      "title": "Event Registration Pass",
+      "description": "Event ticket registration record and QR code pass",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "eventId": { "type": "string" },
+        "eventTitle": { "type": "string" },
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "organization": { "type": "string" },
+        "youthGroup": { "type": "string" },
+        "status": { "type": "string", "enum": ["Confirmed", "Pending", "Waitlist"] },
+        "registeredAt": { "type": "string" }
+      },
+      "required": ["id", "eventId", "fullName", "email"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User account documents"
+    },
+    "/registrations/{registrationId}": {
+      "schema": "Registration",
+      "description": "Event ticket registration passes"
+    }
+  }
+}

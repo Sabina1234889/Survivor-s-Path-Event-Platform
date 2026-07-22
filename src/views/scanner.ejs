@@ -1,0 +1,146 @@
+<%- include('partials/header') %>
+
+<div class="max-w-3xl mx-auto space-y-8 py-4">
+
+  <!-- Title -->
+  <div class="text-center space-y-2 border-b border-slate-800 pb-6">
+    <div class="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/40 text-purple-300 flex items-center justify-center mx-auto text-xl font-bold">
+      QR
+    </div>
+    <h1 class="text-3xl font-extrabold text-white tracking-tight">
+      Gate Check-in QR Scanner
+    </h1>
+    <p class="text-xs text-slate-400 max-w-md mx-auto">
+      Verify digital 3D ticket passes at event gate. Enter or scan QR code payload / Ticket ID to verify registration status.
+    </p>
+  </div>
+
+  <!-- Verification Tool Panel -->
+  <div class="glass-panel p-8 rounded-3xl border border-purple-500/30 space-y-6">
+    
+    <div>
+      <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+        Enter Ticket ID or Scan QR Code Payload
+      </label>
+      <div class="flex gap-3">
+        <input type="text" id="ticketCodeInput" placeholder="e.g. SP-1001 or paste QR JSON payload"
+               class="flex-1 bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-4 py-3 text-sm text-white focus:outline-none font-mono" />
+        <button type="button" id="verifyBtn"
+                class="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-extrabold text-xs px-6 py-3 rounded-xl transition-all shadow-md cursor-pointer">
+          Verify Ticket
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Scan Result Container -->
+    <div id="resultContainer" class="hidden p-6 rounded-2xl border transition-all space-y-3">
+      <!-- Injected via JavaScript -->
+    </div>
+
+  </div>
+
+  <!-- Recent Issuances Quick Test Table -->
+  <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">
+      Recent Tickets Issued (Click to test verification)
+    </h3>
+
+    <% if (recentRegistrations.length === 0) { %>
+      <div class="text-xs text-slate-500 italic p-4 text-center">
+        No registrations yet. Register for an event to generate scannable tickets!
+      </div>
+    <% } else { %>
+      <div class="space-y-2">
+        <% recentRegistrations.forEach(reg => { %>
+          <div onclick="quickVerify('<%= reg.id %>')" 
+               class="p-3 bg-slate-950/80 hover:bg-slate-900 rounded-xl border border-slate-800/80 flex items-center justify-between cursor-pointer transition-all">
+            <div class="flex items-center gap-3">
+              <span class="font-mono font-bold text-xs text-amber-400 bg-slate-900 px-2.5 py-1 rounded border border-slate-800">
+                <%= reg.id %>
+              </span>
+              <div>
+                <div class="text-xs font-bold text-white"><%= reg.fullName %></div>
+                <div class="text-[10px] text-slate-400"><%= reg.eventTitle %></div>
+              </div>
+            </div>
+
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded <%= reg.status === 'Waitlist' ? 'bg-rose-950 text-rose-300 border border-rose-500/30' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/30' %>">
+              <%= reg.status %>
+            </span>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+
+</div>
+
+<script>
+  const verifyBtn = document.getElementById('verifyBtn');
+  const codeInput = document.getElementById('ticketCodeInput');
+  const resultContainer = document.getElementById('resultContainer');
+
+  async function performVerification(code) {
+    if (!code) return;
+
+    try {
+      const res = await fetch('/api/verify-ticket', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+
+      resultContainer.classList.remove('hidden', 'bg-emerald-950/80', 'border-emerald-500/50', 'bg-rose-950/80', 'border-rose-500/50', 'bg-amber-950/80', 'border-amber-500/50');
+
+      if (!data.verified) {
+        resultContainer.classList.add('bg-rose-950/80', 'border-rose-500/50');
+        resultContainer.innerHTML = `
+          <div class="flex items-center gap-3 text-rose-300 font-bold text-sm">
+            <span>✕ Invalid Ticket</span>
+          </div>
+          <div class="text-xs text-slate-300">${data.message}</div>
+        `;
+        return;
+      }
+
+      const rec = data.record;
+      const isWait = rec.status === 'Waitlist';
+
+      if (isWait) {
+        resultContainer.classList.add('bg-amber-950/80', 'border-amber-500/50');
+      } else {
+        resultContainer.classList.add('bg-emerald-950/80', 'border-emerald-500/50');
+      }
+
+      resultContainer.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="text-sm font-extrabold ${isWait ? 'text-amber-300' : 'text-emerald-300'}">
+            ✓ ${data.statusBadge}
+          </div>
+          <span class="font-mono text-xs font-bold text-amber-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${rec.id}</span>
+        </div>
+        <div class="text-xs text-slate-200 space-y-1 pt-1">
+          <div>Attendee Name: <strong class="text-white">${rec.fullName}</strong> (${rec.email})</div>
+          <div>Event: <strong class="text-white">${rec.eventTitle}</strong></div>
+          <div>Organization: ${rec.organization} (${rec.youthGroup})</div>
+          <div class="text-[10px] text-slate-400">Registered At: ${new Date(rec.registeredAt).toLocaleString()}</div>
+        </div>
+      `;
+
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  verifyBtn.addEventListener('click', () => {
+    performVerification(codeInput.value);
+  });
+
+  function quickVerify(id) {
+    codeInput.value = id;
+    performVerification(id);
+  }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,6 @@
+{
+  "name": "Survivor's Path Event Platform",
+  "description": "Full-Stack Youth Event Management Platform with capacity tracking, waitlist management, bilingual support (EN/BN), QR PDF tickets, and Google Sheets synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

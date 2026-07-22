@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // Event Registrations Collection
+    match /registrations/{registrationId} {
+      allow read, write: if true;
+    }
+
+    // Events Collection
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Support Tickets Collection
+    match /support_tickets/{ticketId} {
+      allow read, write: if true;
+    }
+
+  }
+}

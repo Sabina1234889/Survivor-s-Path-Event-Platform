@@ -1,0 +1,89 @@
+<%- include('partials/header') %>
+
+<div class="max-w-4xl mx-auto space-y-8 py-4">
+
+  <div class="flex items-center justify-between border-b border-slate-800 pb-6">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white tracking-tight">
+        My Digital Passes (<%= tickets.length %>)
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">
+        Access your confirmed tickets, priority waitlists, and scannable gate passes.
+      </p>
+    </div>
+
+    <a href="/events" class="bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold text-xs px-4 py-2.5 rounded-xl shadow">
+      + Register New Event
+    </a>
+  </div>
+
+  <% if (tickets.length === 0) { %>
+    <div class="glass-panel p-12 text-center rounded-3xl space-y-4">
+      <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-500">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 002 2h14a2 2 0 002-2V7a2 2 0 00-2-2H5z"></path></svg>
+      </div>
+      <h3 class="text-lg font-bold text-white">No Tickets Found</h3>
+      <p class="text-xs text-slate-400 max-w-sm mx-auto">
+        You haven't registered for any youth events yet. Explore our upcoming events to reserve your spot!
+      </p>
+      <a href="/events" class="inline-block bg-cyan-400 text-slate-950 font-extrabold text-xs px-6 py-3 rounded-xl">
+        Explore Events
+      </a>
+    </div>
+  <% } else { %>
+
+    <div class="space-y-4">
+      <% tickets.forEach(ticket => { %>
+        <% 
+          const event = events.find(e => e.id === ticket.eventId);
+          const isWaitlist = ticket.status === 'Waitlist';
+        %>
+
+        <div class="glass-panel p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/40 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-all">
+          
+          <div class="space-y-2">
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-mono font-bold text-amber-400 bg-slate-950 px-2.5 py-0.5 rounded border border-slate-800">
+                <%= ticket.id %>
+              </span>
+
+              <% if (isWaitlist) { %>
+                <span class="bg-rose-950/80 text-rose-300 text-[10px] font-bold px-2 py-0.5 rounded border border-rose-500/30">
+                  Priority Waitlist
+                </span>
+              <% } else { %>
+                <span class="bg-emerald-950/80 text-emerald-300 text-[10px] font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                  Confirmed Attendee
+                </span>
+              <% } %>
+            </div>
+
+            <h3 class="text-lg font-bold text-white">
+              <%= ticket.eventTitle %>
+            </h3>
+
+            <div class="text-xs text-slate-400">
+              Registered on: <%= new Date(ticket.registeredAt).toLocaleDateString() %>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <a href="/tickets/<%= ticket.id %>" class="bg-slate-900 hover:bg-slate-800 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-slate-700 transition-all">
+              View Digital Pass
+            </a>
+
+            <a href="/api/tickets/<%= ticket.id %>/pdf" class="bg-cyan-400 hover:bg-cyan-300 text-slate-950 text-xs font-extrabold px-4 py-2.5 rounded-xl transition-all shadow flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span>PDF Ticket</span>
+            </a>
+          </div>
+
+        </div>
+      <% }) %>
+    </div>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/footer') %>

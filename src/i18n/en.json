@@ -1,0 +1,112 @@
+{
+  "brand": "Survivor's Path",
+  "tagline": "Empowering Youth Leadership & Resilience",
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "myTickets": "My Tickets",
+    "faq": "FAQ",
+    "support": "Support",
+    "sheetsAdmin": "Google Sheets",
+    "scanner": "QR Scanner",
+    "login": "Sign In",
+    "logout": "Sign Out",
+    "welcome": "Welcome"
+  },
+  "hero": {
+    "title": "Empowering the Next Generation of Youth Leaders",
+    "subtitle": "Join transformational workshops, hackathons, and summits. Experience seamless 3D digital ticketing and instant waitlist management.",
+    "exploreBtn": "Explore Events",
+    "registerFast": "Instant Registration",
+    "capacityAlert": "Live Capacity Tracking Enabled"
+  },
+  "events": {
+    "title": "Upcoming Youth Events",
+    "subtitle": "Select an event below to reserve your spot or join the priority waitlist.",
+    "registered": "Registered",
+    "waitlist": "Waitlist Available",
+    "full": "Full (Waitlist Mode)",
+    "spotsLeft": "spots remaining",
+    "getTicket": "Get Ticket",
+    "viewDetails": "View Details",
+    "organizer": "Organizer",
+    "location": "Location",
+    "dateTime": "Date & Time",
+    "sheetSync": "Auto-syncs to Google Sheets"
+  },
+  "registration": {
+    "title": "Event Registration",
+    "subtitle": "Complete your details to generate your official 3D Glassmorphism Pass.",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "organization": "Institute / Organization",
+    "youthGroup": "Youth Group / Chapter",
+    "age": "Age",
+    "emergencyContact": "Emergency Contact Number",
+    "submitBtn": "Confirm & Generate Pass",
+    "waitlistNotice": "Notice: This event has reached full capacity. Registering now will place you on the Priority Waitlist status.",
+    "registeredNotice": "Guaranteed Pass: Seats are available for instant registration!"
+  },
+  "ticket": {
+    "passTitle": "Survivor's Path Pass",
+    "ticketId": "Ticket ID",
+    "status": "Status",
+    "registered": "CONFIRMED ATTENDEE",
+    "waitlist": "PRIORITY WAITLIST",
+    "downloadPdf": "Download PDF Pass",
+    "scanQr": "Scan QR for Gate Verification",
+    "addedToSheet": "Synced to Google Sheet tab",
+    "backToEvents": "Back to Events"
+  },
+  "auth": {
+    "loginTitle": "Frictionless Pass Sign-In",
+    "loginNotice": "You need to sign in before requesting a ticket. You will be redirected back automatically post-login.",
+    "quickLogin": "Quick One-Click Demo Sign-In",
+    "emailLabel": "Your Email",
+    "nameLabel": "Your Name",
+    "signInBtn": "Sign In & Continue"
+  },
+  "sheets": {
+    "title": "Google Sheets Integration Hub",
+    "statusConnected": "Google Service Account Connected",
+    "statusMock": "Mock Sync Mode Active (Ready for Service Account)",
+    "spreadsheetId": "Spreadsheet ID",
+    "tabName": "Target Tab Name",
+    "totalRows": "Synced Records Count",
+    "appendTest": "Simulate/Test Sheet Append",
+    "downloadCsv": "Export Local CSV Backup"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Everything you need to know about Survivor's Path events, 3D passes, waitlists, and gate verification.",
+    "q1": "How do 3D Glassmorphism Passes work?",
+    "a1": "Once you register for an event, our platform dynamically generates a personalized 3D Glassmorphism Pass with a unique ticket ID and secure QR code. You can download it as a PDF or present it on your mobile device at the event gate.",
+    "q2": "What happens when an event reaches capacity?",
+    "a2": "When event seats are full, new registrants are automatically assigned to the Priority Waitlist. If an attendee cancels or additional capacity is released, waitlisted users are notified instantly.",
+    "q3": "How does Google Sheets synchronization work?",
+    "a3": "All registration records, attendee statuses, and support tickets are automatically synced in real-time to specific tabs in our Google Sheets base via Google Sheets API (or local persistent storage fallback).",
+    "q4": "Do I need an account to register for events?",
+    "a4": "Yes, our frictionless sign-in ensures your tickets are linked to your profile so you can access your digital wallet anytime under 'My Tickets'.",
+    "q5": "How is my digital ticket verified at the event gate?",
+    "a5": "Event organizers use our built-in QR Gate Scanner page to scan your ticket's QR code. The system checks the database in real-time to confirm attendee status and prevent duplicate check-ins.",
+    "q6": "Can I cancel my registration or transfer my ticket?",
+    "a6": "If you cannot attend, please submit a request on our Support page with your Ticket ID, and our team will update your ticket status or pass the seat to the next person on the waitlist."
+  },
+  "support": {
+    "title": "Get in Touch with Support",
+    "subtitle": "Have questions or need assistance? Fill out the form below, and your ticket will be logged directly into our Support system.",
+    "name": "Full Name",
+    "email": "Email Address",
+    "subject": "Subject",
+    "message": "Message",
+    "submitBtn": "Submit Support Ticket",
+    "submitting": "Submitting...",
+    "successTitle": "Ticket Submitted Successfully!",
+    "successMessage": "Thank you for contacting us. Your ticket has been logged and synced to our Google Sheets support system.",
+    "errorTitle": "Submission Error",
+    "errorMessage": "Something went wrong while submitting your request. Please try again.",
+    "backHome": "Back to Home",
+    "tabInfo": "Logged to 'Support_Tickets' Google Sheet tab"
+  }
+}

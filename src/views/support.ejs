@@ -1,0 +1,188 @@
+<%- include('partials/header') %>
+
+<div class="max-w-3xl mx-auto space-y-8 py-4">
+
+  <!-- Header Section -->
+  <div class="text-center space-y-4">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-semibold tracking-wide uppercase shadow-lg shadow-cyan-500/10">
+      <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path>
+      </svg>
+      <span>24/7 Support Desk</span>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-cyan-300">
+      <%= i18n.support.title %>
+    </h1>
+
+    <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+      <%= i18n.support.subtitle %>
+    </p>
+  </div>
+
+  <% if (typeof success !== 'undefined' && success) { %>
+    <!-- Success Confirmation 3D Glassmorphism Panel -->
+    <div class="glass-panel p-8 rounded-3xl border border-emerald-500/40 bg-slate-900/90 shadow-2xl shadow-emerald-500/10 space-y-6 text-center animate-fade-in">
+      
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-[1.5px] mx-auto shadow-xl shadow-emerald-500/30">
+        <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-emerald-400">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+      </div>
+
+      <div class="space-y-2">
+        <h2 class="text-2xl font-black text-white"><%= i18n.support.successTitle %></h2>
+        <p class="text-slate-300 text-sm max-w-md mx-auto leading-relaxed">
+          <%= i18n.support.successMessage %>
+        </p>
+      </div>
+
+      <% if (typeof ticket !== 'undefined' && ticket) { %>
+        <!-- Ticket Summary Card -->
+        <div class="glass-panel p-4 rounded-xl bg-slate-950/60 border border-emerald-500/20 text-left text-xs space-y-2 max-w-md mx-auto">
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Ticket Reference ID:</span>
+            <span class="font-mono font-bold text-emerald-400"><%= ticket.id %></span>
+          </div>
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Submitted By:</span>
+            <span class="text-slate-200 font-semibold"><%= ticket.fullName %></span>
+          </div>
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Subject:</span>
+            <span class="text-slate-200 font-semibold"><%= ticket.subject %></span>
+          </div>
+          <div class="flex justify-between items-center text-slate-400">
+            <span>Google Sheet Sync Status:</span>
+            <span class="inline-flex items-center gap-1 text-emerald-400 font-medium">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              Tab "Support_Tickets"
+            </span>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="flex items-center justify-center gap-4 pt-2">
+        <a href="/support" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-5 py-2.5 rounded-xl transition-all border border-slate-700">
+          Submit Another Request
+        </a>
+        <a href="/" class="bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs px-5 py-2.5 rounded-xl transition-all shadow-md shadow-cyan-500/20">
+          <%= i18n.support.backHome %>
+        </a>
+      </div>
+
+    </div>
+
+  <% } else { %>
+
+    <!-- 3D Glassmorphism Contact Form Card -->
+    <div class="card-3d-wrap">
+      <div class="card-3d glass-panel p-6 sm:p-10 rounded-3xl shadow-2xl border border-white/15 bg-slate-900/80 backdrop-blur-2xl relative overflow-hidden">
+        
+        <!-- Subtle Glow Filter Accent -->
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+          <div class="mb-6 p-4 rounded-xl bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
+            <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span><%= error %></span>
+          </div>
+        <% } %>
+
+        <form action="/submit-support" method="POST" class="space-y-6">
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            
+            <!-- Name Field -->
+            <div class="space-y-2">
+              <label for="fullName" class="block text-xs font-semibold uppercase tracking-wider text-cyan-300">
+                <%= i18n.support.name %> <span class="text-rose-400">*</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="fullName" 
+                  name="fullName" 
+                  required
+                  value="<%= currentUser ? currentUser.name : '' %>"
+                  placeholder="e.g. Alex Morgan"
+                  class="w-full bg-slate-950/60 border border-slate-700/80 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-inner"
+                />
+              </div>
+            </div>
+
+            <!-- Email Field -->
+            <div class="space-y-2">
+              <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-cyan-300">
+                <%= i18n.support.email %> <span class="text-rose-400">*</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="email" 
+                  id="email" 
+                  name="email" 
+                  required
+                  value="<%= currentUser ? currentUser.email : '' %>"
+                  placeholder="e.g. alex@example.com"
+                  class="w-full bg-slate-950/60 border border-slate-700/80 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-inner"
+                />
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Subject Field -->
+          <div class="space-y-2">
+            <label for="subject" class="block text-xs font-semibold uppercase tracking-wider text-cyan-300">
+              <%= i18n.support.subject %> <span class="text-rose-400">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="subject" 
+              name="subject" 
+              required
+              placeholder="e.g. Assistance with Ticket SP-1002 or Registration Query"
+              class="w-full bg-slate-950/60 border border-slate-700/80 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-inner"
+            />
+          </div>
+
+          <!-- Message Field -->
+          <div class="space-y-2">
+            <label for="message" class="block text-xs font-semibold uppercase tracking-wider text-cyan-300">
+              <%= i18n.support.message %> <span class="text-rose-400">*</span>
+            </label>
+            <textarea 
+              id="message" 
+              name="message" 
+              rows="5" 
+              required
+              placeholder="Please describe your question, issue, or feedback in detail..."
+              class="w-full bg-slate-950/60 border border-slate-700/80 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500/20 transition-all shadow-inner resize-none"
+            ></textarea>
+          </div>
+
+          <!-- Google Sheet Destination Tag -->
+          <div class="flex items-center gap-2 p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-300 text-xs">
+            <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span><%= i18n.support.tabInfo %></span>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            class="w-full bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-black text-sm uppercase tracking-wider py-4 rounded-xl transition-all shadow-xl shadow-cyan-500/25 active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2 group"
+          >
+            <span><%= i18n.support.submitBtn %></span>
+            <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/footer') %>

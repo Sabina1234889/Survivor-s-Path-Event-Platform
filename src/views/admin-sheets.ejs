@@ -1,0 +1,335 @@
+<%- include('partials/header') %>
+
+<div class="max-w-6xl mx-auto space-y-8 py-4">
+
+  <!-- Toast / Flash Message Notification -->
+  <% if (typeof msg !== 'undefined' && msg) { %>
+    <div class="p-4 rounded-2xl bg-cyan-950/90 border border-cyan-500/60 text-cyan-200 text-xs font-bold flex items-center justify-between shadow-2xl shadow-cyan-950/50">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+        <span><%= msg %></span>
+      </div>
+      <a href="/admin/sheets" class="text-[10px] uppercase tracking-wider text-cyan-400 hover:underline">Dismiss</a>
+    </div>
+  <% } %>
+
+  <!-- Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+    <div>
+      <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <svg class="w-8 h-8 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+        <span>Admin Command & Sheets Sync Hub</span>
+      </h1>
+      <p class="text-xs text-slate-400 mt-1">
+        Manage Registrations, Verify Payments, Issue Ticket Passes, and Broadcast Bulk Emails.
+      </p>
+    </div>
+
+    <!-- Status Badge -->
+    <% if (config.isConnected) { %>
+      <div class="bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+        <span><%= i18n.sheets.statusConnected %></span>
+      </div>
+    <% } else { %>
+      <div class="bg-amber-950/90 text-amber-300 border border-amber-500/50 px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-lg">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span><%= i18n.sheets.statusMock %></span>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Admin Approval System Table -->
+  <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 space-y-6 shadow-2xl">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
+      <div>
+        <h2 class="text-lg font-black text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          <span>Registrations & Approval Queue</span>
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">
+          Review payment Transaction IDs for paid events. Click "Approve & Issue Ticket" to update status in Google Sheets and unlock tickets.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs">
+        <span class="px-3 py-1 rounded-lg bg-amber-950 text-amber-300 border border-amber-500/40 font-bold">
+          <%= allRegistrations.filter(r => r.status === 'Pending').length %> Pending Approval
+        </span>
+        <span class="px-3 py-1 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-bold">
+          <%= allRegistrations.filter(r => r.status === 'Confirmed' || r.status === 'Registered').length %> Confirmed
+        </span>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-300">
+        <thead class="bg-slate-950/90 text-[10px] text-slate-400 uppercase font-mono tracking-wider">
+          <tr>
+            <th class="p-3">Ticket ID</th>
+            <th class="p-3">Attendee Name</th>
+            <th class="p-3">Event</th>
+            <th class="p-3">Payment Info</th>
+            <th class="p-3">Transaction ID</th>
+            <th class="p-3">Status</th>
+            <th class="p-3 text-right">Action / Ticket</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/80">
+          <% if (allRegistrations.length === 0) { %>
+            <tr>
+              <td colspan="7" class="p-6 text-center text-slate-500 italic">No registrations recorded yet.</td>
+            </tr>
+          <% } else { %>
+            <% allRegistrations.forEach(reg => { %>
+              <tr class="hover:bg-slate-900/60 transition-all">
+                <td class="p-3 font-mono font-bold text-amber-400"><%= reg.id %></td>
+                <td class="p-3 font-semibold text-white">
+                  <div><%= reg.fullName %></div>
+                  <div class="text-[10px] text-slate-400 font-normal"><%= reg.email %> | <%= reg.phone %></div>
+                </td>
+                <td class="p-3 font-medium text-slate-200">
+                  <%= reg.eventTitle %>
+                </td>
+                <td class="p-3">
+                  <% if (reg.isPaidEvent) { %>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-cyan-950 text-cyan-300 border border-cyan-500/30">
+                      PAID (৳<%= reg.paymentAmount %>)
+                    </span>
+                  <% } else { %>
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-300 border border-emerald-500/30">
+                      FREE
+                    </span>
+                  <% } %>
+                </td>
+                <td class="p-3 font-mono text-cyan-200">
+                  <% if (reg.transactionId) { %>
+                    <div class="bg-slate-950 px-2 py-1 rounded border border-slate-800 inline-block font-bold">
+                      <%= reg.transactionId %> (<%= reg.paymentMethod || 'bKash' %>)
+                    </div>
+                  <% } else { %>
+                    <span class="text-slate-500 text-[10px]">N/A (Free Event)</span>
+                  <% } %>
+                </td>
+                <td class="p-3">
+                  <% if (reg.status === 'Pending') { %>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-amber-950/90 text-amber-300 border border-amber-500/50 flex items-center gap-1.5 w-fit">
+                      <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                      <span>Pending Approval</span>
+                    </span>
+                  <% } else if (reg.status === 'Confirmed' || reg.status === 'Registered') { %>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 flex items-center gap-1.5 w-fit">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      <span>Confirmed</span>
+                    </span>
+                  <% } else { %>
+                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-rose-950/90 text-rose-300 border border-rose-500/50 flex items-center gap-1.5 w-fit">
+                      <span>Waitlist</span>
+                    </span>
+                  <% } %>
+                </td>
+                <td class="p-3 text-right">
+                  <% if (reg.status === 'Pending') { %>
+                    <form action="/admin/registrations/<%= reg.id %>/approve" method="POST" class="inline-block">
+                      <button type="submit" 
+                              class="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-black text-[11px] px-3.5 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
+                        ✓ Approve & Issue Ticket
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <a href="/tickets/<%= reg.id %>" 
+                       target="_blank"
+                       class="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-cyan-500/50 inline-block transition-all">
+                      View Ticket ↗
+                    </a>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Bulk Email Broadcast System -->
+  <div class="glass-panel p-6 rounded-3xl border border-indigo-500/30 space-y-6 shadow-2xl">
+    <div class="border-b border-slate-800/80 pb-4">
+      <h2 class="text-lg font-black text-white flex items-center gap-2">
+        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+        <span>Bulk Email System (Nodemailer & PDF Attachment Engine)</span>
+      </h2>
+      <p class="text-xs text-slate-400 mt-0.5">
+        Send personalized emails with individual PDF Ticket Passes attached to all <strong>"Confirmed"</strong> attendees for a selected event.
+      </p>
+    </div>
+
+    <form action="/admin/send-bulk-email" method="POST" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+            Target Event Audience
+          </label>
+          <select name="eventId" required class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-400 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-all">
+            <option value="ALL">All Confirmed Attendees Across All Events</option>
+            <% events.forEach(evt => { %>
+              <option value="<%= evt.id %>"><%= evt.titleEn %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+            Email Subject Line
+          </label>
+          <input type="text" name="subject" required 
+                 value="Survivor's Path - Your Official Ticket Pass & Event Details"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-400 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-all" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+          <span>Custom Instructions / Announcement Message</span>
+          <span class="text-[10px] text-indigo-400 font-mono">Dynamic Tags: {NAME}, {EVENT}, {TICKET_ID}, {DATE}</span>
+        </label>
+        <textarea name="customInstructions" rows="4" required
+                  class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-400 rounded-xl p-4 text-xs font-sans text-slate-200 focus:outline-none transition-all leading-relaxed"
+        >Dear {NAME},
+
+We are thrilled to confirm your registration for {EVENT}. 
+
+Your official ticket pass ID is {TICKET_ID}. Please review the venue guidelines and find your personalized PDF Gate Pass attached to this email.
+
+If you have any questions, reply to this email or reach out to our team at support@survivorspath.org.
+
+Warm regards,
+Survivor's Path Executive Team</textarea>
+      </div>
+
+      <div class="flex items-center justify-between pt-2">
+        <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+          <span>Each email automatically attaches the attendee's personal <strong>PDF Ticket Pass</strong>.</span>
+        </div>
+
+        <button type="submit" 
+                class="bg-gradient-to-r from-indigo-500 via-sky-500 to-cyan-500 hover:from-indigo-400 hover:to-cyan-400 text-slate-950 font-black text-xs px-6 py-3.5 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer">
+          ✉ Send All Confirmed Emails
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Google Sheets Integration & Configuration Panel -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4 lg:col-span-1">
+      <h3 class="text-sm font-bold text-white uppercase tracking-wider text-cyan-400">
+        Service Account Setup
+      </h3>
+
+      <div class="space-y-3 text-xs text-slate-300">
+        <div>
+          <span class="text-[10px] text-slate-500 uppercase font-bold block">Spreadsheet ID</span>
+          <code class="bg-slate-950 px-2 py-1 rounded text-cyan-300 text-[11px] block mt-0.5 truncate">
+            <%= config.spreadsheetId || 'Not set (using local mock store)' %>
+          </code>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-slate-500 uppercase font-bold block">Service Account Email</span>
+          <code class="bg-slate-950 px-2 py-1 rounded text-cyan-300 text-[11px] block mt-0.5 truncate">
+            <%= config.clientEmail || 'Not set (using local mock store)' %>
+          </code>
+        </div>
+
+        <div>
+          <span class="text-[10px] text-slate-500 uppercase font-bold block">Private Key Status</span>
+          <span class="font-bold <%= config.hasPrivateKey ? 'text-emerald-400' : 'text-amber-400' %>">
+            <%= config.hasPrivateKey ? '✓ Configured' : '⚠ Missing (Set GOOGLE_PRIVATE_KEY in .env)' %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Test Append Form -->
+      <form action="/admin/sheets/test-append" method="POST" class="pt-2">
+        <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Target Event Tab</label>
+        <select name="eventId" class="w-full bg-slate-950 border border-slate-700 text-xs text-white p-2 rounded-lg mb-3">
+          <% events.forEach(evt => { %>
+            <option value="<%= evt.id %>"><%= evt.sheetTabName %></option>
+          <% }) %>
+        </select>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold text-xs py-2.5 rounded-xl transition-all shadow cursor-pointer">
+          <%= i18n.sheets.appendTest %>
+        </button>
+      </form>
+    </div>
+
+    <!-- Synced Tabs Data Viewer -->
+    <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-6 lg:col-span-2">
+      
+      <div class="flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white uppercase tracking-wider text-cyan-400">
+          Live Synced Rows by Google Sheet Tab
+        </h3>
+        <span class="text-xs text-slate-400">Mode: <strong><%= config.mode === 'live' ? 'Live API' : 'Persisted Local Store' %></strong></span>
+      </div>
+
+      <% const tabNames = Object.keys(localData); %>
+      <% if (tabNames.length === 0) { %>
+        <div class="p-8 text-center text-xs text-slate-400 border border-dashed border-slate-800 rounded-xl">
+          No records submitted yet. Register for an event or click "Test Append" to see live row appending in action!
+        </div>
+      <% } else { %>
+
+        <% tabNames.forEach(tab => { %>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-bold text-emerald-300 bg-emerald-950/40 px-3 py-1.5 rounded-lg border border-emerald-500/20">
+              <span>Sheet Tab: '<%= tab %>'</span>
+              <span><%= localData[tab].length %> rows</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950/80 text-[10px] text-slate-400 uppercase font-mono">
+                  <tr>
+                    <th class="p-2">ID</th>
+                    <th class="p-2">Full Name</th>
+                    <th class="p-2">Email</th>
+                    <th class="p-2">Status</th>
+                    <th class="p-2">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                  <% localData[tab].forEach(row => { %>
+                    <tr class="hover:bg-slate-900/60">
+                      <td class="p-2 font-mono text-amber-400"><%= row.id %></td>
+                      <td class="p-2 font-semibold text-white"><%= row.fullName %></td>
+                      <td class="p-2"><%= row.email %></td>
+                      <td class="p-2">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold <%= row.status === 'Waitlist' ? 'bg-rose-950 text-rose-300 border border-rose-500/30' : (row.status === 'Pending' ? 'bg-amber-950 text-amber-300 border border-amber-500/30' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/30') %>">
+                          <%= row.status %>
+                        </span>
+                      </td>
+                      <td class="p-2 text-[10px] text-slate-400"><%= new Date(row.registeredAt).toLocaleTimeString() %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% }) %>
+
+      <% } %>
+
+    </div>
+
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+

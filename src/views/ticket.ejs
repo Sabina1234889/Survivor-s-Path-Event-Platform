@@ -1,0 +1,200 @@
+<%- include('partials/header') %>
+
+<% 
+  const isWaitlist = registration.status === 'Waitlist';
+  const isPending = registration.status === 'Pending';
+  const isConfirmed = registration.status === 'Confirmed' || registration.status === 'Registered';
+  const eventTitle = lang === 'bn' ? (event ? event.titleBn : registration.eventTitle) : (event ? event.titleEn : registration.eventTitle);
+  const whatsappUrl = (event && event.whatsappGroupLink) || 'https://chat.whatsapp.com/SurvivorsPathYouth2026';
+%>
+
+<div class="max-w-2xl mx-auto space-y-8 py-4">
+
+  <!-- Success Banner -->
+  <% if (typeof isJustRegistered !== 'undefined' && isJustRegistered) { %>
+    <div class="p-4 rounded-2xl bg-cyan-950/90 border border-cyan-500/50 flex items-center justify-between shadow-xl shadow-cyan-950/50">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
+          ✓
+        </div>
+        <div>
+          <div class="text-sm font-bold text-cyan-300">Application Submitted!</div>
+          <div class="text-xs text-slate-300">
+            <%= isPending ? 'Your payment is awaiting Admin verification.' : 'Your official pass was generated and synced to Google Sheets.' %>
+          </div>
+        </div>
+      </div>
+      <span class="text-xs font-mono font-bold text-amber-400 bg-slate-900 px-3 py-1 rounded-lg border border-slate-800">
+        <%= registration.id %>
+      </span>
+    </div>
+  <% } %>
+
+  <!-- 3D Holographic Glassmorphism Pass Showcase -->
+  <div class="card-3d-wrap">
+    <div class="card-3d glass-panel ticket-foil p-8 rounded-3xl border border-cyan-400/40 relative shadow-2xl space-y-6">
+      
+      <!-- Top Badge Header -->
+      <div class="flex items-center justify-between pb-6 border-b border-slate-800/80">
+        <div>
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-cyan-400 block mb-0.5">
+            SURVIVOR'S PATH OFFICIAL PASS
+          </span>
+          <span class="text-xl font-black text-white">
+            <%= isPending ? 'Registration Request' : i18n.ticket.passTitle %>
+          </span>
+        </div>
+
+        <div class="text-right">
+          <span class="text-[10px] text-slate-400 uppercase font-semibold block"><%= i18n.ticket.ticketId %></span>
+          <span class="text-lg font-mono font-black text-amber-400 bg-slate-950/80 px-3 py-1 rounded-lg border border-slate-800 inline-block">
+            <%= registration.id %>
+          </span>
+        </div>
+      </div>
+
+      <!-- Status Indicator Pill -->
+      <div>
+        <% if (isConfirmed) { %>
+          <div class="w-full bg-emerald-950/90 border border-emerald-500/60 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-emerald-950/50">
+            <div class="flex items-center gap-3">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+              <div>
+                <span class="text-xs font-black text-emerald-300 uppercase tracking-wider block">✓ Confirmed Attendee</span>
+                <span class="text-[11px] text-emerald-200/80">Gate entry active. Show QR code at venue entrance.</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-bold bg-emerald-900 px-2.5 py-1 rounded-lg text-emerald-300 uppercase">ACTIVE PASS</span>
+          </div>
+        <% } else if (isPending) { %>
+          <div class="w-full bg-amber-950/90 border border-amber-500/60 p-4 rounded-2xl space-y-2 shadow-lg shadow-amber-950/50">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+                <span class="text-xs font-black text-amber-300 uppercase tracking-wider">⏳ Pending Admin Approval</span>
+              </div>
+              <span class="text-[10px] font-bold bg-amber-900 px-2.5 py-1 rounded-lg text-amber-300 uppercase">PAYMENT VERIFICATION</span>
+            </div>
+            <div class="text-xs text-amber-200/90 leading-relaxed pt-1 border-t border-amber-800/40">
+              Transaction ID: <strong class="font-mono text-cyan-300"><%= registration.transactionId || 'Submitted' %></strong> via <%= registration.paymentMethod || 'Mobile Banking' %>.
+              <br/>Once verified by the Admin team, your ticket pass PDF will unlock automatically.
+            </div>
+          </div>
+        <% } else { %>
+          <div class="w-full bg-rose-950/90 border border-rose-500/60 p-3 rounded-xl flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"></span>
+              <span class="text-xs font-black text-rose-300 uppercase tracking-wider"><%= i18n.ticket.waitlist %></span>
+            </div>
+            <span class="text-[11px] font-medium text-rose-200">Seat Allocation Pending</span>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Event Info Block -->
+      <div class="space-y-4">
+        <div>
+          <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Event</span>
+          <h2 class="text-lg font-extrabold text-white"><%= eventTitle %></h2>
+        </div>
+
+        <% if (event) { %>
+          <div class="grid grid-cols-2 gap-4 text-xs text-slate-300 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+            <div>
+              <span class="text-[10px] text-slate-400 block">Date & Time</span>
+              <strong class="text-white"><%= event.date %> (<%= event.time %>)</strong>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 block">Location</span>
+              <strong class="text-white"><%= lang === 'bn' ? event.locationBn : event.locationEn %></strong>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Attendee & QR Code Layout -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-800/80 items-center">
+        
+        <div class="sm:col-span-2 space-y-2 text-xs text-slate-300">
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-bold">Attendee Name</span>
+            <div class="text-sm font-bold text-white"><%= registration.fullName %></div>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-bold">Email & Phone</span>
+            <div class="text-slate-200"><%= registration.email %> | <%= registration.phone %></div>
+          </div>
+          <div>
+            <span class="text-[10px] text-slate-400 uppercase font-bold">Organization / Youth Group</span>
+            <div class="text-slate-200"><%= registration.organization %> (<%= registration.youthGroup %>)</div>
+          </div>
+          <div class="pt-1 text-[10px] text-emerald-400 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span>Google Sheets Synced: Tab '<%= event ? event.sheetTabName : 'Registration' %>'</span>
+          </div>
+        </div>
+
+        <!-- Scannable QR Code Canvas / Image -->
+        <div class="bg-white p-3 rounded-2xl flex flex-col items-center justify-center space-y-1 shadow-lg text-slate-950 relative <%= isPending ? 'opacity-40 blur-[1px]' : '' %>">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<%= encodeURIComponent(registration.qrPayload) %>" 
+               alt="QR Code Pass" 
+               class="w-28 h-28 object-contain" />
+          <span class="text-[9px] font-bold font-mono text-slate-600">
+            <%= isPending ? 'LOCKED QR PASS' : 'GATE QR CODE' %>
+          </span>
+          <% if (isPending) { %>
+            <div class="absolute inset-0 bg-slate-950/60 rounded-2xl flex flex-col items-center justify-center p-2 text-center text-amber-300">
+              <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <span class="text-[9px] font-bold uppercase">Locked</span>
+            </div>
+          <% } %>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Post-Registration Call To Action (CTA) Buttons -->
+  <div class="space-y-4 pt-2">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      
+      <!-- CTA Button 1: Download Ticket -->
+      <% if (isConfirmed) { %>
+        <a href="/api/tickets/<%= registration.id %>/pdf" 
+           class="bg-gradient-to-r from-cyan-400 via-sky-500 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 font-black text-sm py-4 rounded-2xl shadow-xl shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 active:scale-95 group">
+          <svg class="w-5 h-5 group-hover:bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Download Ticket PDF</span>
+        </a>
+      <% } else { %>
+        <button disabled 
+                class="bg-slate-800 text-slate-500 cursor-not-allowed font-bold text-sm py-4 rounded-2xl border border-slate-700 flex items-center justify-center gap-2">
+          <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          <span>Ticket Locked (Pending Approval)</span>
+        </button>
+      <% } %>
+
+      <!-- CTA Button 2: Join WhatsApp / Messenger Group -->
+      <a href="<%= whatsappUrl %>" 
+         target="_blank" 
+         rel="noopener noreferrer"
+         class="bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-sm py-4 rounded-2xl shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 active:scale-95">
+        <svg class="w-5 h-5 text-slate-950" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        <span>Join WhatsApp / Messenger Group</span>
+      </a>
+
+    </div>
+
+    <!-- Return to Events Button -->
+    <div class="text-center pt-2">
+      <a href="/events" 
+         class="inline-block text-slate-400 hover:text-white font-bold text-xs py-2 px-4 transition-all">
+        ← <%= i18n.ticket.backToEvents %>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>
+
