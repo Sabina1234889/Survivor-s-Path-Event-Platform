@@ -45,33 +45,13 @@
         </div>
       </div>
 
-      <!-- Quick One-Click Demo Sign-In Options -->
-      <div class="space-y-3 pt-4 border-t border-slate-800 z-10">
-        <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-          Quick One-Click Demo Sign-In
+      <!-- Security & Cloud Storage Note -->
+      <div class="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 z-10 text-xs text-slate-400 space-y-1">
+        <div class="font-bold text-slate-300 flex items-center gap-1.5">
+          <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          <span>Secure Firebase Authentication</span>
         </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <form action="/login" method="POST">
-            <input type="hidden" name="email" value="anika.rahman@survivorspath.org" />
-            <input type="hidden" name="name" value="Anika Rahman" />
-            <input type="hidden" name="redirect" value="<%= redirectUrl %>" />
-            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 font-bold text-[11px] p-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow">
-              <div class="w-5 h-5 rounded-full bg-cyan-400/20 flex items-center justify-center font-black text-cyan-300 text-[10px]">A</div>
-              <span class="truncate">Anika (Attendee)</span>
-            </button>
-          </form>
-
-          <form action="/login" method="POST">
-            <input type="hidden" name="email" value="tanvir.hossain@survivorspath.org" />
-            <input type="hidden" name="name" value="Tanvir Hossain" />
-            <input type="hidden" name="redirect" value="<%= redirectUrl %>" />
-            <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-500/30 font-bold text-[11px] p-2.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow">
-              <div class="w-5 h-5 rounded-full bg-purple-400/20 flex items-center justify-center font-black text-purple-300 text-[10px]">T</div>
-              <span class="truncate">Tanvir (Organizer)</span>
-            </button>
-          </form>
-        </div>
+        <p class="text-[11px] text-slate-400">All sign ups and user logins are synchronized live to Firebase Firestore.</p>
       </div>
     </div>
 
@@ -126,12 +106,9 @@
         </div>
 
         <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Password *
-            </label>
-            <span class="text-[11px] text-slate-400">Default Demo: <code class="text-cyan-300">password123</code></span>
-          </div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+            Password *
+          </label>
           <input type="password" name="password" required placeholder="••••••••"
                  class="w-full bg-slate-950/90 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-3 text-sm text-white focus:outline-none transition-all focus:ring-2 focus:ring-cyan-500/30" />
         </div>

@@ -109,10 +109,18 @@ export async function saveRegistrationToFirestore(
       updatedAt: new Date().toISOString(),
     });
 
-    console.log(`[Firebase Firestore] Successfully saved Event Registration: registrations/${registration.id}`);
+    // Also write to event-specific collection in Firestore (e.g. event_registrations_evt-123)
+    const eventRegRef = doc(db, `event_registrations_${registration.eventId}`, registration.id);
+    await setDoc(eventRegRef, {
+      ...registration,
+      syncedToFirebase: true,
+      updatedAt: new Date().toISOString(),
+    });
+
+    console.log(`[Firebase Firestore] Successfully saved Event Registration to registrations/${registration.id} and event_registrations_${registration.eventId}/${registration.id}`);
     return {
       success: true,
-      message: `Registration ticket ${registration.id} saved to Firebase Firestore.`,
+      message: `Registration ticket ${registration.id} saved to Firebase Firestore collections.`,
     };
   } catch (err: any) {
     console.error(`[Firebase Firestore Error] Failed to save registration:`, err?.message || err);

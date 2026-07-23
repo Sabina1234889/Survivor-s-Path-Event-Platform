@@ -105,7 +105,9 @@
           <div class="text-[11px] text-slate-400">Submissions append to tab: <strong class="text-emerald-300">'<%= event.sheetTabName %>'</strong></div>
         </div>
       </div>
-      <a href="/admin/sheets" class="text-xs text-cyan-400 hover:underline font-semibold">Inspect Sheet</a>
+      <% if (currentUser && (currentUser.role === 'admin' || currentUser.email === 'mdanontosunny1068@gmail.com')) { %>
+        <a href="/admin/sheets" class="text-xs text-cyan-400 hover:underline font-semibold">Inspect Sheet</a>
+      <% } %>
     </div>
 
     <!-- Register Button -->

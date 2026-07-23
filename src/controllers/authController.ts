@@ -81,7 +81,7 @@ export function renderSignupPage(req: Request, res: Response) {
 /**
  * Handle Login Form Submission
  */
-export function handleLogin(req: Request, res: Response) {
+export async function handleLogin(req: Request, res: Response) {
   const { email, password, redirect } = req.body;
   const targetRedirect = (redirect || req.query.redirect || '/profile') as string;
 
@@ -148,9 +148,11 @@ export function handleLogin(req: Request, res: Response) {
     });
   }
 
-  // Create Session Cookie
+  // Create Session Cookie & Sync to Firestore
   const isDefaultAdmin = normalizedEmail === DEFAULT_ADMIN_EMAIL;
   if (isDefaultAdmin) existingUser.role = 'admin';
+
+  await saveUserToFirestore(existingUser);
 
   const sessionUser: UserSession = {
     id: existingUser.id,
