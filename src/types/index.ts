@@ -53,7 +53,7 @@ export interface UserAccount {
   phone: string;
   address: string;
   organization: string;
-  role: 'attendee' | 'organizer';
+  role: 'admin' | 'organizer' | 'attendee';
   createdAt: string;
 }
 
@@ -64,7 +64,7 @@ export interface UserSession {
   phone?: string;
   address?: string;
   organization?: string;
-  role: 'attendee' | 'organizer';
+  role: 'admin' | 'organizer' | 'attendee';
 }
 
 export interface SupportTicketRecord {

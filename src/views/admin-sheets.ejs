@@ -39,7 +39,219 @@
     <% } %>
   </div>
 
-  <!-- Admin Approval System Table -->
+  <!-- Quick Action Grid: Make Admin & Export CSV -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- 1. Make New Admin (Promote to Admin) -->
+    <div class="glass-panel p-6 rounded-3xl border border-purple-500/30 space-y-4 shadow-xl lg:col-span-1">
+      <div class="border-b border-slate-800 pb-3">
+        <h2 class="text-base font-black text-white flex items-center gap-2">
+          <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+          <span>Promote User to Admin</span>
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">
+          Enter an existing registered email address to grant full Admin Panel access.
+        </p>
+      </div>
+
+      <form action="/admin/promote-user" method="POST" class="space-y-3">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1">
+            User Email Address
+          </label>
+          <input type="email" name="email" required placeholder="user@example.com" 
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-purple-400 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-black text-xs py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">
+          👑 Promote to Admin
+        </button>
+      </form>
+
+      <!-- Active Users & Admins Summary List -->
+      <div class="pt-2 border-t border-slate-800/80">
+        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-2">Registered Accounts Role Overview</span>
+        <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs">
+          <% if (typeof userAccounts !== 'undefined' && userAccounts) { %>
+            <% userAccounts.forEach(u => { %>
+              <div class="flex items-center justify-between bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                <div class="truncate mr-2">
+                  <span class="font-bold text-slate-200 block text-[11px] truncate"><%= u.name %></span>
+                  <span class="text-[10px] text-slate-400 block truncate"><%= u.email %></span>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase <%= u.role === 'admin' ? 'bg-purple-950 text-purple-300 border border-purple-500/40' : 'bg-slate-900 text-slate-400 border border-slate-800' %>">
+                  <%= u.role || 'attendee' %>
+                </span>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Export Event Registrations to CSV / Google Sheet -->
+    <div class="glass-panel p-6 rounded-3xl border border-emerald-500/30 space-y-4 shadow-xl lg:col-span-2">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-base font-black text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span>One-Click Export to CSV / Google Sheet</span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">
+            Download instant event attendee lists in CSV format for drag & drop import into Google Sheets.
+          </p>
+        </div>
+
+        <a href="/admin/events/ALL/export-csv" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs px-3.5 py-2 rounded-xl transition-all shadow-md active:scale-95 inline-flex items-center gap-1.5">
+          <span>📥 Export ALL Data (CSV)</span>
+        </a>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-950/90 text-[10px] text-slate-400 uppercase font-mono">
+            <tr>
+              <th class="p-2.5">Event Title</th>
+              <th class="p-2.5">Data Sub-Collection / Tab</th>
+              <th class="p-2.5">Registrations</th>
+              <th class="p-2.5 text-right">One-Click Export</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/80">
+            <% events.forEach(evt => { %>
+              <tr class="hover:bg-slate-900/60">
+                <td class="p-2.5 font-bold text-white">
+                  <%= evt.titleEn %>
+                  <div class="text-[10px] text-slate-400 font-normal"><%= evt.date %> | <%= evt.category %></div>
+                </td>
+                <td class="p-2.5 font-mono text-[11px] text-cyan-300">
+                  <span class="bg-slate-950 px-2 py-0.5 rounded border border-slate-800"><%= evt.sheetTabName %></span>
+                </td>
+                <td class="p-2.5 font-semibold text-slate-300">
+                  <%= evt.currentRegistrations %> / <%= evt.capacity %>
+                </td>
+                <td class="p-2.5 text-right">
+                  <a href="/admin/events/<%= evt.id %>/export-csv" class="bg-slate-950 hover:bg-slate-900 text-emerald-400 hover:text-emerald-300 font-bold text-[11px] px-3 py-1.5 rounded-lg border border-slate-800 hover:border-emerald-500/50 inline-flex items-center gap-1 transition-all">
+                    <span>📊 Export CSV</span>
+                  </a>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 3. Post New Event Form (Dynamic Data Architecture) -->
+  <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 space-y-6 shadow-2xl">
+    <div class="border-b border-slate-800/80 pb-4">
+      <h2 class="text-lg font-black text-white flex items-center gap-2">
+        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <span>Create New Event & Initialize Data Storage</span>
+      </h2>
+      <p class="text-xs text-slate-400 mt-0.5">
+        Posting an event creates a dedicated Firestore collection map & Google Sheet tab (e.g. <code>event_registrations_evt-[id]</code>) ensuring event records remain clean and unmixed.
+      </p>
+    </div>
+
+    <form action="/admin/create-event" method="POST" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Event Title (English) *
+          </label>
+          <input type="text" name="titleEn" required placeholder="e.g. National Youth Leadership Summit 2026"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Event Title (Bangla)
+          </label>
+          <input type="text" name="titleBn" placeholder="e.g. জাতীয় যুব নেতৃত্ব সম্মেলন ২০২৬"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Category
+          </label>
+          <select name="category" class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all">
+            <option value="Summit">Summit</option>
+            <option value="Workshop">Workshop</option>
+            <option value="Hackathon">Hackathon</option>
+            <option value="Leadership">Leadership</option>
+            <option value="Community">Community</option>
+            <option value="Civic Action">Civic Action</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Event Date *
+          </label>
+          <input type="text" name="date" required placeholder="e.g. Nov 15, 2026"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Event Time
+          </label>
+          <input type="text" name="time" placeholder="e.g. 10:00 AM - 05:00 PM"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Location (English) *
+          </label>
+          <input type="text" name="locationEn" required placeholder="e.g. KIB Auditorium, Farmgate, Dhaka"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Capacity (Max Attendees)
+          </label>
+          <input type="number" name="capacity" value="200"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Ticket Price (BDT) - Set 0 for Free
+          </label>
+          <input type="number" name="price" value="0" placeholder="0 for Free, or e.g. 500"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+            Organizer Name
+          </label>
+          <input type="text" name="organizer" placeholder="Survivor's Path Youth Council"
+                 class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none transition-all" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1">
+          Description (English)
+        </label>
+        <textarea name="descriptionEn" rows="2" placeholder="Brief event objective and agenda..."
+                  class="w-full bg-slate-950 border border-slate-700 focus:border-cyan-400 rounded-xl p-3 text-xs text-white focus:outline-none transition-all"></textarea>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button type="submit" class="bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 hover:from-cyan-300 hover:to-blue-500 text-slate-950 font-black text-xs px-6 py-3 rounded-xl transition-all shadow-lg shadow-cyan-500/20 active:scale-95 cursor-pointer">
+          🚀 Publish Event & Create Data Collection
+        </button>
+      </div>
+    </form>
+  </div>
   <div class="glass-panel p-6 rounded-3xl border border-cyan-500/30 space-y-6 shadow-2xl">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-4">
       <div>

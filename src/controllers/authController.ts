@@ -9,11 +9,17 @@ function hashPassword(password: string): string {
   return crypto.createHash('sha256').update(password).digest('hex');
 }
 
+const DEFAULT_ADMIN_EMAIL = 'mdanontosunny1068@gmail.com';
+
 export function getSessionUser(req: Request): UserSession | null {
   const userCookie = req.cookies?.sp_user;
   if (!userCookie) return null;
   try {
-    return JSON.parse(userCookie);
+    const user: UserSession = JSON.parse(userCookie);
+    if (user.email && user.email.toLowerCase() === DEFAULT_ADMIN_EMAIL) {
+      user.role = 'admin';
+    }
+    return user;
   } catch {
     return null;
   }
@@ -25,6 +31,20 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const originalUrl = req.originalUrl || '/events';
     console.log(`[Auth Middleware] Unauthenticated user attempted to access ${originalUrl}. Redirecting to /login?redirect=${encodeURIComponent(originalUrl)}`);
     return res.redirect(`/login?redirect=${encodeURIComponent(originalUrl)}`);
+  }
+  (req as any).user = user;
+  next();
+}
+
+export function requireAdmin(req: Request, res: Response, next: NextFunction) {
+  const user = getSessionUser(req);
+  if (!user) {
+    return res.redirect(`/login?redirect=${encodeURIComponent(req.originalUrl || '/admin/sheets')}`);
+  }
+  const isDefaultAdmin = user.email.toLowerCase() === DEFAULT_ADMIN_EMAIL;
+  if (user.role !== 'admin' && user.role !== 'organizer' && !isDefaultAdmin) {
+    console.warn(`[Admin Security] Access denied for non-admin user ${user.email} attempting to reach ${req.originalUrl}`);
+    return res.redirect('/events?error=' + encodeURIComponent('Access denied: You need administrator permissions to access the Admin Panel.'));
   }
   (req as any).user = user;
   next();
@@ -129,6 +149,9 @@ export function handleLogin(req: Request, res: Response) {
   }
 
   // Create Session Cookie
+  const isDefaultAdmin = normalizedEmail === DEFAULT_ADMIN_EMAIL;
+  if (isDefaultAdmin) existingUser.role = 'admin';
+
   const sessionUser: UserSession = {
     id: existingUser.id,
     email: existingUser.email,
@@ -136,7 +159,7 @@ export function handleLogin(req: Request, res: Response) {
     phone: existingUser.phone,
     address: existingUser.address,
     organization: existingUser.organization,
-    role: existingUser.role,
+    role: isDefaultAdmin ? 'admin' : existingUser.role,
   };
 
   res.cookie('sp_user', JSON.stringify(sessionUser), {
@@ -175,6 +198,7 @@ export async function handleSignup(req: Request, res: Response) {
   }
 
   // 3. Hash Password & Construct User Object
+  const isDefaultAdmin = normalizedEmail === DEFAULT_ADMIN_EMAIL;
   const newUser: UserAccount = {
     id: `usr-${Date.now()}`,
     name: name.trim(),
@@ -183,7 +207,7 @@ export async function handleSignup(req: Request, res: Response) {
     phone: (phone || '').trim() || '+880 1700-000000',
     address: (address || '').trim() || 'Dhaka, Bangladesh',
     organization: (organization || '').trim() || 'Youth Changemaker',
-    role: 'attendee',
+    role: isDefaultAdmin ? 'admin' : 'attendee',
     createdAt: new Date().toISOString(),
   };
 
@@ -211,6 +235,29 @@ export async function handleSignup(req: Request, res: Response) {
   });
 
   return res.redirect(targetRedirect);
+}
+
+/**
+ * Handle Promoting an existing user to Admin
+ */
+export async function handlePromoteToAdmin(req: Request, res: Response) {
+  const { email } = req.body;
+  const normalizedEmail = (email || '').trim().toLowerCase();
+
+  if (!normalizedEmail) {
+    return res.redirect('/admin/sheets?msg=' + encodeURIComponent('⚠ Please enter a valid email address to promote.'));
+  }
+
+  const user = USER_ACCOUNTS.find((u) => u.email.toLowerCase() === normalizedEmail);
+  if (!user) {
+    return res.redirect('/admin/sheets?msg=' + encodeURIComponent(`⚠ User with email '${normalizedEmail}' not found in registered accounts.`));
+  }
+
+  user.role = 'admin';
+  await saveUserToFirestore(user);
+
+  console.log(`[Auth Controller] User ${user.email} successfully promoted to Admin!`);
+  return res.redirect('/admin/sheets?msg=' + encodeURIComponent(`✓ User '${user.email}' has been successfully promoted to Admin!`));
 }
 
 /**

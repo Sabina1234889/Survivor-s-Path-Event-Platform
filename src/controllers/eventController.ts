@@ -69,116 +69,132 @@ export function renderEventDetailsPage(req: Request, res: Response) {
 }
 
 export function renderRegisterPage(req: Request, res: Response) {
-  const { slug } = req.params;
-  const event = getEventByIdOrSlug(slug);
-  if (!event) {
-    return res.status(404).render('404', { message: 'Event not found' });
+  try {
+    const identifier = req.params.slug || req.params.eventId || req.params.id;
+    const event = getEventByIdOrSlug(identifier);
+
+    if (!event) {
+      console.warn(`[Registration Route] Event not found for identifier: ${identifier}`);
+      return res.status(404).render('404', { message: 'Event not found' });
+    }
+
+    const lang = req.cookies?.sp_lang || (res as any).locals?.lang || 'en';
+    const i18n = (res as any).locals?.i18n || {};
+    const currentUser = getSessionUser(req);
+
+    const capacity = typeof event.capacity === 'number' ? event.capacity : 100;
+    const currentRegistrations = typeof event.currentRegistrations === 'number' ? event.currentRegistrations : 0;
+    const spotsLeft = Math.max(0, capacity - currentRegistrations);
+    const isWaitlist = spotsLeft === 0;
+
+    return res.render('register', {
+      i18n,
+      lang,
+      currentUser,
+      event,
+      spotsLeft,
+      isWaitlist,
+    });
+  } catch (error) {
+    console.error("Error in registration route:", error);
+    return res.status(500).send("Something went wrong on the server");
   }
-
-  const lang = req.cookies?.sp_lang || 'en';
-  const i18n = (res as any).locals.i18n;
-  const currentUser = getSessionUser(req);
-
-  const spotsLeft = Math.max(0, event.capacity - event.currentRegistrations);
-  const isWaitlist = spotsLeft === 0;
-
-  return res.render('register', {
-    i18n,
-    lang,
-    currentUser,
-    event,
-    spotsLeft,
-    isWaitlist,
-  });
 }
 
 export async function handleRegistrationSubmit(req: Request, res: Response) {
-  const { slug } = req.params;
-  const event = getEventByIdOrSlug(slug);
-  if (!event) {
-    return res.status(404).send('Event not found');
+  try {
+    const identifier = req.params.slug || req.params.eventId || req.params.id;
+    const event = getEventByIdOrSlug(identifier);
+
+    if (!event) {
+      console.warn(`[Registration Submit Route] Event not found for identifier: ${identifier}`);
+      return res.status(404).send('Event not found');
+    }
+
+    const currentUser = getSessionUser(req);
+    const fullName = req.body.fullName || currentUser?.name || 'Youth Delegate';
+    const email = req.body.email || currentUser?.email || 'delegate@survivorspath.org';
+    const phone = req.body.phone || '+880 1712-345678';
+    const organization = req.body.organization || 'Youth Organization';
+    const youthGroup = req.body.youthGroup || 'Central District Chapter';
+    const age = Number(req.body.age) || 20;
+    const emergencyContact = req.body.emergencyContact || '+880 1819-000000';
+    const transactionId = (req.body.transactionId || '').trim();
+    const paymentMethod = req.body.paymentMethod || 'bKash';
+
+    // Capacity & Waitlist Logic
+    const isFull = event.currentRegistrations >= event.capacity;
+    
+    let status: 'Confirmed' | 'Pending' | 'Waitlist' = 'Confirmed';
+    let paymentStatus: 'Completed' | 'Pending Verification' | 'N/A' = 'N/A';
+
+    if (isFull) {
+      status = 'Waitlist';
+      paymentStatus = event.isPaid ? 'Pending Verification' : 'N/A';
+    } else if (event.isPaid) {
+      // Paid events require Admin approval -> Status is set to 'Pending'
+      status = 'Pending';
+      paymentStatus = 'Pending Verification';
+    } else {
+      // Free events -> Status is automatically set to 'Confirmed'
+      status = 'Confirmed';
+      paymentStatus = 'Completed';
+      event.currentRegistrations += 1;
+    }
+
+    const ticketId = getNextTicketId();
+    const registeredAt = new Date().toISOString();
+
+    const qrPayload = JSON.stringify({
+      ticketId,
+      eventId: event.id,
+      eventTitle: event.titleEn,
+      fullName,
+      email,
+      status,
+      registeredAt,
+      verificationCode: `SP-VERIFY-${Date.now()}`,
+    });
+
+    const registrationRecord: RegistrationRecord = {
+      id: ticketId,
+      eventId: event.id,
+      eventTitle: event.titleEn,
+      fullName,
+      email,
+      phone,
+      organization,
+      youthGroup,
+      age,
+      emergencyContact,
+      status,
+      registeredAt,
+      qrPayload,
+      syncedToGoogleSheets: false,
+      isPaidEvent: Boolean(event.isPaid),
+      paymentAmount: event.price || 0,
+      transactionId: transactionId || undefined,
+      paymentMethod,
+      paymentStatus,
+    };
+
+    // Google Sheets Integration: Append to event-specific sheet tab name
+    const sheetSyncResult = await appendRegistrationToSheet(event.sheetTabName, registrationRecord);
+    registrationRecord.syncedToGoogleSheets = sheetSyncResult.success;
+
+    // Firebase Firestore Integration
+    const fbSyncResult = await saveRegistrationToFirestore(registrationRecord);
+
+    // Save to persistent memory
+    REGISTRATIONS_STORE.push(registrationRecord);
+
+    console.log(`[Event Registration Controller] User ${fullName} (${email}) registered for '${event.titleEn}'. Ticket ID: ${ticketId}. Status: ${status}, Paid: ${event.isPaid}, TxID: ${transactionId}. Google Sheets: ${sheetSyncResult.message}, Firebase: ${fbSyncResult.message}`);
+
+    return res.redirect(`/tickets/${ticketId}?success=1`);
+  } catch (error) {
+    console.error("Error in registration submit route:", error);
+    return res.status(500).send("Something went wrong on the server");
   }
-
-  const currentUser = getSessionUser(req);
-  const fullName = req.body.fullName || currentUser?.name || 'Youth Delegate';
-  const email = req.body.email || currentUser?.email || 'delegate@survivorspath.org';
-  const phone = req.body.phone || '+880 1712-345678';
-  const organization = req.body.organization || 'Youth Organization';
-  const youthGroup = req.body.youthGroup || 'Central District Chapter';
-  const age = Number(req.body.age) || 20;
-  const emergencyContact = req.body.emergencyContact || '+880 1819-000000';
-  const transactionId = (req.body.transactionId || '').trim();
-  const paymentMethod = req.body.paymentMethod || 'bKash';
-
-  // Capacity & Waitlist Logic
-  const isFull = event.currentRegistrations >= event.capacity;
-  
-  let status: 'Confirmed' | 'Pending' | 'Waitlist' = 'Confirmed';
-  let paymentStatus: 'Completed' | 'Pending Verification' | 'N/A' = 'N/A';
-
-  if (isFull) {
-    status = 'Waitlist';
-    paymentStatus = event.isPaid ? 'Pending Verification' : 'N/A';
-  } else if (event.isPaid) {
-    // Paid events require Admin approval -> Status is set to 'Pending'
-    status = 'Pending';
-    paymentStatus = 'Pending Verification';
-  } else {
-    // Free events -> Status is automatically set to 'Confirmed'
-    status = 'Confirmed';
-    paymentStatus = 'Completed';
-    event.currentRegistrations += 1;
-  }
-
-  const ticketId = getNextTicketId();
-  const registeredAt = new Date().toISOString();
-
-  const qrPayload = JSON.stringify({
-    ticketId,
-    eventId: event.id,
-    eventTitle: event.titleEn,
-    fullName,
-    email,
-    status,
-    registeredAt,
-    verificationCode: `SP-VERIFY-${Date.now()}`,
-  });
-
-  const registrationRecord: RegistrationRecord = {
-    id: ticketId,
-    eventId: event.id,
-    eventTitle: event.titleEn,
-    fullName,
-    email,
-    phone,
-    organization,
-    youthGroup,
-    age,
-    emergencyContact,
-    status,
-    registeredAt,
-    qrPayload,
-    syncedToGoogleSheets: false,
-    isPaidEvent: Boolean(event.isPaid),
-    paymentAmount: event.price || 0,
-    transactionId: transactionId || undefined,
-    paymentMethod,
-    paymentStatus,
-  };
-
-  // Google Sheets Integration: Append to event-specific sheet tab name
-  const sheetSyncResult = await appendRegistrationToSheet(event.sheetTabName, registrationRecord);
-  registrationRecord.syncedToGoogleSheets = sheetSyncResult.success;
-
-  // Firebase Firestore Integration
-  const fbSyncResult = await saveRegistrationToFirestore(registrationRecord);
-
-  // Save to persistent memory
-  REGISTRATIONS_STORE.push(registrationRecord);
-
-  console.log(`[Event Registration Controller] User ${fullName} (${email}) registered for '${event.titleEn}'. Ticket ID: ${ticketId}. Status: ${status}, Paid: ${event.isPaid}, TxID: ${transactionId}. Google Sheets: ${sheetSyncResult.message}, Firebase: ${fbSyncResult.message}`);
-
-  return res.redirect(`/tickets/${ticketId}?success=1`);
 }
 
 export function renderTicketPage(req: Request, res: Response) {

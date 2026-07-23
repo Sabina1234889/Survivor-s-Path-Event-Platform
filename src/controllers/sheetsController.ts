@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { getSheetsConfig, getLocalSheetData, appendRegistrationToSheet } from '../services/googleSheetsService.js';
-import { INITIAL_EVENTS, REGISTRATIONS_STORE, getNextTicketId } from '../data/eventsData.js';
+import { syncEventsToFirestore } from '../services/firebaseService.js';
+import { INITIAL_EVENTS, REGISTRATIONS_STORE, USER_ACCOUNTS, getNextTicketId } from '../data/eventsData.js';
 import { sendBulkEventEmails } from '../services/emailService.js';
 import { getSessionUser } from './authController.js';
-import { RegistrationRecord } from '../types/index.js';
+import { RegistrationRecord, EventItem } from '../types/index.js';
 
 export function renderSheetsAdminPage(req: Request, res: Response) {
   const lang = req.cookies?.sp_lang || 'en';
@@ -21,8 +22,112 @@ export function renderSheetsAdminPage(req: Request, res: Response) {
     localData,
     events: INITIAL_EVENTS,
     allRegistrations: REGISTRATIONS_STORE,
+    userAccounts: USER_ACCOUNTS,
     msg,
   });
+}
+
+/**
+ * Create a New Event with dynamic sub-collection / sheet tab mapping
+ */
+export async function handleCreateEvent(req: Request, res: Response) {
+  try {
+    const {
+      titleEn,
+      titleBn,
+      category,
+      date,
+      time,
+      locationEn,
+      locationBn,
+      capacity,
+      price,
+      descriptionEn,
+      descriptionBn,
+      organizer,
+    } = req.body;
+
+    if (!titleEn || !date || !locationEn) {
+      return res.redirect('/admin/sheets?msg=' + encodeURIComponent('⚠ Title (EN), Date, and Location (EN) are required fields to create an event.'));
+    }
+
+    const eventId = `evt-${Date.now()}`;
+    const slug = titleEn.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `event-${Date.now()}`;
+    const numericPrice = Number(price) || 0;
+    const isPaid = numericPrice > 0;
+    const sheetTabName = `event_registrations_${eventId}`;
+
+    const newEvent: EventItem = {
+      id: eventId,
+      slug,
+      titleEn: titleEn.trim(),
+      titleBn: (titleBn || titleEn).trim(),
+      descriptionEn: (descriptionEn || 'Official Youth Event').trim(),
+      descriptionBn: (descriptionBn || descriptionEn || 'অফিসিয়াল ইভেন্ট').trim(),
+      date: date.trim(),
+      time: (time || '10:00 AM - 04:00 PM').trim(),
+      locationEn: locationEn.trim(),
+      locationBn: (locationBn || locationEn).trim(),
+      category: category || 'Community',
+      capacity: Number(capacity) || 100,
+      currentRegistrations: 0,
+      sheetTabName,
+      imageBg: 'from-cyan-900/80 via-blue-950/90 to-slate-950',
+      accentColor: '#06b6d4',
+      organizer: (organizer || "Survivor's Path Youth Council").trim(),
+      isPaid,
+      price: numericPrice,
+    };
+
+    INITIAL_EVENTS.push(newEvent);
+    await syncEventsToFirestore(INITIAL_EVENTS);
+
+    console.log(`[Event Controller] Created new event '${newEvent.titleEn}' (ID: ${eventId}, Sheet Tab: ${sheetTabName})`);
+    return res.redirect(`/admin/sheets?msg=${encodeURIComponent(`✓ New Event '${newEvent.titleEn}' created successfully! Registration sub-collection initialized.`)}`);
+  } catch (err: any) {
+    console.error('Error in handleCreateEvent:', err);
+    return res.redirect('/admin/sheets?msg=' + encodeURIComponent('⚠ Server error creating event.'));
+  }
+}
+
+/**
+ * Export Event Registrations to CSV
+ */
+export function handleExportEventCSV(req: Request, res: Response) {
+  try {
+    const { eventId } = req.params;
+    const event = INITIAL_EVENTS.find((e) => e.id === eventId);
+    const targetRegistrations = eventId === 'ALL'
+      ? REGISTRATIONS_STORE
+      : REGISTRATIONS_STORE.filter((r) => r.eventId === eventId);
+
+    const headers = ['Ticket ID', 'Event Title', 'Full Name', 'Email', 'Phone', 'Organization', 'Youth Group', 'Age', 'Status', 'Payment Status', 'Transaction ID', 'Registered At'];
+
+    const csvRows = targetRegistrations.map((r) => [
+      `"${r.id}"`,
+      `"${(r.eventTitle || '').replace(/"/g, '""')}"`,
+      `"${(r.fullName || '').replace(/"/g, '""')}"`,
+      `"${(r.email || '').replace(/"/g, '""')}"`,
+      `"${(r.phone || '').replace(/"/g, '""')}"`,
+      `"${(r.organization || '').replace(/"/g, '""')}"`,
+      `"${(r.youthGroup || '').replace(/"/g, '""')}"`,
+      `"${r.age || ''}"`,
+      `"${r.status}"`,
+      `"${r.paymentStatus || 'N/A'}"`,
+      `"${r.transactionId || ''}"`,
+      `"${r.registeredAt}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...csvRows.map((row) => row.join(','))].join('\n');
+    const filename = event ? `registrations_${event.slug}.csv` : 'registrations_all_events.csv';
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvContent);
+  } catch (error) {
+    console.error('Error in handleExportEventCSV:', error);
+    return res.status(500).send('Error generating CSV export.');
+  }
 }
 
 export async function handleApproveRegistration(req: Request, res: Response) {

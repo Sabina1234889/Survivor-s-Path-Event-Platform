@@ -25,6 +25,8 @@ import {
   handleProfileUpdate,
   handleLogout,
   requireAuth,
+  requireAdmin,
+  handlePromoteToAdmin,
   getSessionUser,
 } from './src/controllers/authController.js';
 
@@ -33,6 +35,8 @@ import {
   handleTestAppend,
   handleApproveRegistration,
   handleSendBulkEmail,
+  handleCreateEvent,
+  handleExportEventCSV,
 } from './src/controllers/sheetsController.js';
 
 import {
@@ -99,7 +103,9 @@ async function startServer() {
 
   // Frictionless Auth Event Registration (Redirects to login if not authenticated)
   app.get('/events/:slug/register', requireAuth, renderRegisterPage);
+  app.get('/events/:eventId/register', requireAuth, renderRegisterPage);
   app.post('/events/:slug/register', requireAuth, handleRegistrationSubmit);
+  app.post('/events/:eventId/register', requireAuth, handleRegistrationSubmit);
 
   // Digital Ticket Pass & Downloadable PDF Pass
   app.get('/tickets/:ticketId', renderTicketPage);
@@ -119,11 +125,14 @@ async function startServer() {
   app.get('/profile', requireAuth, renderProfilePage);
   app.post('/profile/update', requireAuth, handleProfileUpdate);
 
-  // Google Sheets Admin Hub & Registration Approvals
-  app.get('/admin/sheets', renderSheetsAdminPage);
-  app.post('/admin/sheets/test-append', handleTestAppend);
-  app.post('/admin/registrations/:ticketId/approve', handleApproveRegistration);
-  app.post('/admin/send-bulk-email', handleSendBulkEmail);
+  // Google Sheets Admin Hub & Registration Approvals (Protected with RBAC requireAdmin)
+  app.get('/admin/sheets', requireAdmin, renderSheetsAdminPage);
+  app.post('/admin/sheets/test-append', requireAdmin, handleTestAppend);
+  app.post('/admin/registrations/:ticketId/approve', requireAdmin, handleApproveRegistration);
+  app.post('/admin/send-bulk-email', requireAdmin, handleSendBulkEmail);
+  app.post('/admin/promote-user', requireAdmin, handlePromoteToAdmin);
+  app.post('/admin/create-event', requireAdmin, handleCreateEvent);
+  app.get('/admin/events/:eventId/export-csv', requireAdmin, handleExportEventCSV);
 
   // QR Verification Gate Scanner
   app.get('/scanner', renderScannerPage);
